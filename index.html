@@ -1,661 +1,229 @@
+
+<!--
+REMISE DE DIPLOME 2025
+PROJET ALUM-HEAD x Andrea Becze-Deak
+PLATEFORME DE CUSTOMISATION
+------------------------------------------------------------
+CONTENU
+------------------------------------------------------------
+-->
+
+
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arbre Virtuel avec Feuillage</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(to bottom, #87CEEB 0%, #98FB98 100%);
-            font-family: Arial, sans-serif;
-            overflow-x: hidden;
-            min-height: 100vh;
-        }
-        
-        .sky {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, 
-                #87CEEB 0%, 
-                #B0E0E6 30%, 
-                #F0F8FF 70%, 
-                #98FB98 100%);
-        }
-        
-        .controls {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            backdrop-filter: blur(10px);
-        }
-        
-        .controls h3 {
-            margin-top: 0;
-            color: #2d5016;
-            text-align: center;
-        }
-        
-        .control-group {
-            margin: 10px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .control-group label {
-            min-width: 80px;
-            font-weight: bold;
-            color: #2d5016;
-        }
-        
-        .control-group input, .control-group button {
-            padding: 8px 12px;
-            border: 2px solid #4a7c59;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        
-        .control-group button {
-            background: linear-gradient(45deg, #4a7c59, #6b8e23);
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: none;
-        }
-        
-        .control-group button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        
-        .tree-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        .ground {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 200px;
-            background: linear-gradient(to bottom, #8fbc8f, #228b22);
-            border-radius: 50% 50% 0 0 / 20px 20px 0 0;
-        }
-        
-        .grass {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 50px;
-            background: repeating-linear-gradient(
-                90deg,
-                #32cd32,
-                #32cd32 2px,
-                #228b22 2px,
-                #228b22 4px
-            );
-            opacity: 0.7;
-        }
-        
-        #treeCanvas {
-            position: absolute;
-            bottom: 150px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-        }
-        
-        .sun {
-            position: absolute;
-            top: 50px;
-            right: 100px;
-            width: 80px;
-            height: 80px;
-            background: radial-gradient(circle, #ffff00, #ffa500);
-            border-radius: 50%;
-            box-shadow: 0 0 30px #ffff00;
-            animation: sunPulse 3s ease-in-out infinite;
-        }
-        
-        @keyframes sunPulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-        
-        .clouds {
-            position: absolute;
-            top: 100px;
-            left: 0;
-            width: 100%;
-            height: 200px;
-        }
-        
-        .cloud {
-            position: absolute;
-            background: white;
-            border-radius: 50px;
-            opacity: 0.8;
-            animation: float 20s infinite linear;
-        }
-        
-        .cloud:before,
-        .cloud:after {
-            content: '';
-            position: absolute;
-            background: white;
-            border-radius: 50px;
-        }
-        
-        .cloud1 {
-            width: 80px;
-            height: 40px;
-            top: 20px;
-            animation-delay: 0s;
-        }
-        
-        .cloud1:before {
-            width: 50px;
-            height: 50px;
-            top: -25px;
-            left: 10px;
-        }
-        
-        .cloud1:after {
-            width: 60px;
-            height: 40px;
-            top: -15px;
-            right: 10px;
-        }
-        
-        .cloud2 {
-            width: 60px;
-            height: 30px;
-            top: 80px;
-            animation-delay: -8s;
-        }
-        
-        .cloud2:before {
-            width: 40px;
-            height: 40px;
-            top: -20px;
-            left: 5px;
-        }
-        
-        .cloud2:after {
-            width: 50px;
-            height: 30px;
-            top: -10px;
-            right: 5px;
-        }
-        
-        @keyframes float {
-            0% { transform: translateX(-100px); }
-            100% { transform: translateX(calc(100vw + 100px)); }
-        }
-        
-        .info-panel {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            max-width: 200px;
-        }
-        
-        .info-panel h4 {
-            margin-top: 0;
-            color: #2d5016;
-        }
-        
-        .seasons {
-            display: flex;
-            gap: 10px;
-            margin: 10px 0;
-        }
-        
-        .season-btn {
-            padding: 5px 10px;
-            border: none;
-            border-radius: 15px;
-            cursor: pointer;
-            font-size: 12px;
-            transition: all 0.3s ease;
-        }
-        
-        .season-btn.spring { background: #90EE90; }
-        .season-btn.summer { background: #32CD32; }
-        .season-btn.autumn { background: #FF8C00; }
-        .season-btn.winter { background: #E6E6FA; }
-        
-        .season-btn:hover {
-            transform: scale(1.1);
-        }
-    </style>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="custom-style.css" />
 </head>
+
 <body>
-    <div class="sky"></div>
-    
-    <div class="sun"></div>
-    
-    <div class="clouds">
-        <div class="cloud cloud1"></div>
-        <div class="cloud cloud2"></div>
-    </div>
-    
-    <div class="controls">
-        <h3>🌳 Contrôles de l'Arbre</h3>
-        
-        <div class="control-group">
-            <label>Âge:</label>
-            <input type="range" id="ageSlider" min="0" max="100" value="50">
-            <span id="ageValue">50</span>
-        </div>
-        
-        <div class="control-group">
-            <label>Branches:</label>
-            <input type="range" id="branchSlider" min="3" max="8" value="5">
-            <span id="branchValue">5</span>
-        </div>
-        
-        <div class="control-group">
-            <label>Feuillage:</label>
-            <input type="range" id="leavesSlider" min="10" max="50" value="25">
-            <span id="leavesValue">25</span>
-        </div>
-        
-        <div class="control-group">
-            <button onclick="growTree()">🌱 Faire Pousser</button>
-            <button onclick="resetTree()">🔄 Recommencer</button>
-        </div>
-        
-        <div class="control-group">
-            <button onclick="animateGrowth()">⚡ Croissance Animée</button>
-        </div>
-    </div>
-    
-    <div class="info-panel">
-        <h4>🍃 Saisons</h4>
-        <div class="seasons">
-            <button class="season-btn spring" onclick="setSeason('spring')">🌸</button>
-            <button class="season-btn summer" onclick="setSeason('summer')">☀️</button>
-            <button class="season-btn autumn" onclick="setSeason('autumn')">🍂</button>
-            <button class="season-btn winter" onclick="setSeason('winter')">❄️</button>
-        </div>
-        <p id="treeInfo">Âge: 50 ans<br>Santé: Excellente</p>
-    </div>
-    
-    <div class="tree-container">
-        <div class="ground"></div>
-        <div class="grass"></div>
-        <canvas id="treeCanvas" width="800" height="600"></canvas>
-    </div>
+    <main class="page-wrapper">
+
+        <h1>Generate your tree</h1>
+        <section-custom>
+            <canvas id="fractalTrees"></canvas>
+            <script src="fractal-trees.js"></script>
+            <ul class="section-custom-text">
+                <p>Department :</p>
+                <div class="dropdown">
+                    <button class="dropbtn" id="selected-department">- select -</button>
+                    <div class="dropdown-content dropdown-content-department">
+
+                        <a href="#">Cinema</a>
+                        <a href="#">Fine Arts</a>
+                        <a href="#">Interior architecture / Space & Communication</a>
+                        <a href="#">Product Design / Fashion & Accessories</a>
+                        <a href="#">Visual Communication / Media Design</a>
+                    </div>
+                </div>
+
+
+                <p>Promotion :</p>
+                <div class="dropdown" id="promotion-dropdown">
+                    <button class="dropbtn" id="selected-promotion">- 2025 -</button>
+                    <div class="dropdown-content dropdown-content-promotion"></div>
+                </div>
+
+                <br />
+                <button id="saveImageBtn">Save image</button>
+            </ul>
+        </section-custom>
+        <p id="credits">© Andrea Becze-Deák, alum 2025</p>
+    </main>
 
     <script>
-        const canvas = document.getElementById('treeCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        let currentSeason = 'summer';
-        let treeAge = 50;
-        let branchCount = 5;
-        let leafDensity = 25;
-        let animationFrame = null;
-        
-        // Couleurs par saison
-        const seasonColors = {
-            spring: {
-                leaves: ['#90EE90', '#98FB98', '#ADFF2F', '#FFB6C1'],
-                trunk: '#8B4513',
-                sky: 'linear-gradient(to bottom, #87CEEB 0%, #B0E0E6 30%, #F0F8FF 70%, #98FB98 100%)'
-            },
-            summer: {
-                leaves: ['#228B22', '#32CD32', '#00FF00', '#90EE90'],
-                trunk: '#654321',
-                sky: 'linear-gradient(to bottom, #4169E1 0%, #87CEEB 30%, #F0F8FF 70%, #98FB98 100%)'
-            },
-            autumn: {
-                leaves: ['#FF4500', '#FF8C00', '#FFD700', '#DC143C', '#B22222'],
-                trunk: '#8B4513',
-                sky: 'linear-gradient(to bottom, #FFA500 0%, #FFE4B5 30%, #F0F8FF 70%, #DEB887 100%)'
-            },
-            winter: {
-                leaves: ['#E6E6FA', '#F0F8FF', '#FFFFFF'],
-                trunk: '#696969',
-                sky: 'linear-gradient(to bottom, #B0C4DE 0%, #E6E6FA 30%, #F0F8FF 70%, #FFFFFF 100%)'
+        const dropbtn = document.getElementById("selected-department");
+        const dropdownContent = document.querySelector(".dropdown-content");
+        const departmentDropdown = document.querySelector(".dropdown");
+
+
+        dropbtn.addEventListener("click", () => {
+            dropdownContent.classList.toggle("show");
+        });
+
+        function createAllDepartmentsOption() {
+            const allDept = document.createElement("a");
+            allDept.href = "#";
+            allDept.textContent = "All departments";
+            allDept.classList.add("all-dept");
+
+            allDept.addEventListener("click", e => {
+                e.preventDefault();
+                selectedDepartment = "All departments";
+                dropbtn.textContent = selectedDepartment;
+
+
+                allDept.remove();
+
+
+                document.querySelectorAll(".dropdown-content a").forEach(a => {
+                    a.style.display = "block";
+                });
+
+                dropdownContent.classList.remove("show");
+                draw();
+            });
+
+            return allDept;
+        }
+
+        function updateDepartmentSelection(item) {
+            const previouslySelected = selectedDepartment;
+            selectedDepartment = item.textContent.trim();
+            dropbtn.textContent = selectedDepartment;
+
+
+            if (!document.querySelector(".dropdown-content a.all-dept") && selectedDepartment !== "All departments") {
+                const allDeptOption = createAllDepartmentsOption();
+                dropdownContent.appendChild(allDeptOption);
             }
-        };
-        
-        class Tree {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.branches = [];
-                this.leaves = [];
-                this.wind = 0;
-            }
-            
-            drawBranch(startX, startY, endX, endY, thickness, level = 0) {
-                ctx.strokeStyle = seasonColors[currentSeason].trunk;
-                ctx.lineWidth = thickness;
-                ctx.lineCap = 'round';
-                
-                // Ajouter un effet de vent subtil
-                const windEffect = Math.sin(Date.now() * 0.001 + level) * (this.wind * 0.5);
-                endX += windEffect;
-                
-                ctx.beginPath();
-                ctx.moveTo(startX, startY);
-                ctx.lineTo(endX, endY);
-                ctx.stroke();
-                
-                // Ajouter de la texture à l'écorce
-                if (thickness > 5) {
-                    ctx.strokeStyle = 'rgba(101, 67, 33, 0.3)';
-                    ctx.lineWidth = 1;
-                    for (let i = 0; i < 3; i++) {
-                        const offsetX = (Math.random() - 0.5) * thickness * 0.5;
-                        ctx.beginPath();
-                        ctx.moveTo(startX + offsetX, startY);
-                        ctx.lineTo(endX + offsetX, endY);
-                        ctx.stroke();
-                    }
+
+
+            item.style.display = "none";
+
+
+            document.querySelectorAll(".dropdown-content a").forEach(a => {
+                if (a !== item && !a.classList.contains("all-dept")) {
+                    a.style.display = "block";
                 }
-                
-                return { endX, endY };
-            }
-            
-            drawLeaf(x, y, size, color, rotation = 0) {
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.rotate(rotation);
-                
-                // Dessiner une feuille réaliste
-                ctx.fillStyle = color;
-                ctx.beginPath();
-                
-                // Forme de feuille
-                ctx.ellipse(0, 0, size, size * 1.5, 0, 0, 2 * Math.PI);
-                ctx.fill();
-                
-                // Nervure centrale
-                ctx.strokeStyle = 'rgba(0, 100, 0, 0.5)';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(0, -size * 1.5);
-                ctx.lineTo(0, size * 1.5);
-                ctx.stroke();
-                
-                ctx.restore();
-            }
-            
-            generateBranches(x, y, angle, length, thickness, level, maxLevel) {
-                if (level > maxLevel || length < 10) return;
-                
-                const endX = x + Math.cos(angle) * length;
-                const endY = y + Math.sin(angle) * length;
-                
-                this.drawBranch(x, y, endX, endY, thickness, level);
-                
-                if (level < maxLevel) {
-                    const newLength = length * (0.7 + Math.random() * 0.2);
-                    const newThickness = thickness * 0.8;
-                    const branches = Math.min(branchCount, level + 2);
-                    
-                    for (let i = 0; i < branches; i++) {
-                        const angleVariation = (Math.random() - 0.5) * Math.PI * 0.6;
-                        const newAngle = angle + angleVariation;
-                        
-                        // Délai pour l'animation de croissance
-                        setTimeout(() => {
-                            this.generateBranches(endX, endY, newAngle, newLength, newThickness, level + 1, maxLevel);
-                        }, level * 100);
-                    }
-                }
-                
-                // Ajouter des feuilles aux extrémités des branches
-                if (level >= maxLevel - 2) {
-                    this.addLeavesCluster(endX, endY, level);
-                }
-            }
-            
-            addLeavesCluster(x, y, level) {
-                const leafCount = Math.floor(leafDensity * (0.5 + Math.random() * 0.5));
-                const colors = seasonColors[currentSeason].leaves;
-                
-                for (let i = 0; i < leafCount; i++) {
-                    setTimeout(() => {
-                        const offsetX = (Math.random() - 0.5) * 40;
-                        const offsetY = (Math.random() - 0.5) * 40;
-                        const leafX = x + offsetX;
-                        const leafY = y + offsetY;
-                        
-                        const size = 3 + Math.random() * 4;
-                        const color = colors[Math.floor(Math.random() * colors.length)];
-                        const rotation = Math.random() * Math.PI * 2;
-                        
-                        this.drawLeaf(leafX, leafY, size, color, rotation);
-                        
-                        // Animation de chute des feuilles en automne
-                        if (currentSeason === 'autumn' && Math.random() < 0.1) {
-                            this.animateFallingLeaf(leafX, leafY, size, color);
-                        }
-                    }, i * 50);
-                }
-            }
-            
-            animateFallingLeaf(startX, startY, size, color) {
-                let y = startY;
-                let x = startX;
-                let rotation = 0;
-                
-                const fall = () => {
-                    // Effacer l'ancienne position
-                    ctx.clearRect(x - size - 2, y - size - 2, (size + 2) * 2, (size + 2) * 2);
-                    
-                    y += 2;
-                    x += Math.sin(y * 0.01) * 0.5; // Mouvement en zigzag
-                    rotation += 0.1;
-                    
-                    if (y < canvas.height + 50) {
-                        this.drawLeaf(x, y, size, color, rotation);
-                        requestAnimationFrame(fall);
-                    }
-                };
-                
-                fall();
-            }
-            
-            draw() {
-                // Effacer le canvas
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                
-                // Dessiner le tronc principal
-                const trunkHeight = treeAge * 3 + 100;
-                const trunkThickness = Math.max(8, treeAge * 0.3);
-                
-                this.drawBranch(this.x, this.y, this.x, this.y - trunkHeight, trunkThickness);
-                
-                // Générer les branches
-                const maxLevel = Math.floor(treeAge / 15) + 2;
-                this.generateBranches(this.x, this.y - trunkHeight, -Math.PI / 2, trunkHeight * 0.6, trunkThickness * 0.8, 0, maxLevel);
-            }
-            
-            addWind(strength) {
-                this.wind = strength;
-            }
+            });
+
+            dropdownContent.classList.remove("show");
+            draw();
         }
-        
-        // Instance de l'arbre
-        const tree = new Tree(canvas.width / 2, canvas.height - 50);
-        
-        // Fonctions de contrôle
-        function updateSliders() {
-            const ageSlider = document.getElementById('ageSlider');
-            const branchSlider = document.getElementById('branchSlider');
-            const leavesSlider = document.getElementById('leavesSlider');
-            
-            treeAge = parseInt(ageSlider.value);
-            branchCount = parseInt(branchSlider.value);
-            leafDensity = parseInt(leavesSlider.value);
-            
-            document.getElementById('ageValue').textContent = treeAge;
-            document.getElementById('branchValue').textContent = branchCount;
-            document.getElementById('leavesValue').textContent = leafDensity;
-            
-            updateTreeInfo();
-        }
-        
-        function updateTreeInfo() {
-            const info = document.getElementById('treeInfo');
-            const health = treeAge > 80 ? 'Mature' : treeAge > 50 ? 'Excellente' : treeAge > 20 ? 'Bonne' : 'Jeune';
-            info.innerHTML = `Âge: ${treeAge} ans<br>Santé: ${health}`;
-        }
-        
-        function growTree() {
-            tree.draw();
-        }
-        
-        function resetTree() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            treeAge = 1;
-            document.getElementById('ageSlider').value = 1;
-            updateSliders();
-        }
-        
-        function animateGrowth() {
-            resetTree();
-            let currentAge = 1;
-            const targetAge = parseInt(document.getElementById('ageSlider').value);
-            
-            const growthAnimation = setInterval(() => {
-                treeAge = currentAge;
-                document.getElementById('ageSlider').value = currentAge;
-                updateSliders();
-                tree.draw();
-                
-                currentAge += 2;
-                if (currentAge > targetAge) {
-                    clearInterval(growthAnimation);
-                }
-            }, 200);
-        }
-        
-        function setSeason(season) {
-            currentSeason = season;
-            
-            // Changer le fond selon la saison
-            const sky = document.querySelector('.sky');
-            sky.style.background = seasonColors[season].sky;
-            
-            // Redessiner l'arbre avec les nouvelles couleurs
-            tree.draw();
-            
-            // Ajouter des effets spéciaux par saison
-            if (season === 'winter') {
-                addSnowEffect();
-            } else if (season === 'spring') {
-                addFlowerEffect();
+
+
+        document.querySelectorAll(".dropdown-content a").forEach(item => {
+            item.addEventListener("click", e => {
+                e.preventDefault();
+                updateDepartmentSelection(item);
+            });
+        });
+
+
+        window.addEventListener("click", e => {
+            if (!departmentDropdown.contains(e.target)) {
+                dropdownContent.classList.remove("show");
             }
-        }
-        
-        function addSnowEffect() {
-            // Effet de neige simple
-            for (let i = 0; i < 20; i++) {
-                setTimeout(() => {
-                    const x = Math.random() * canvas.width;
-                    const y = -10;
-                    animateSnowflake(x, y);
-                }, i * 100);
-            }
-        }
-        
-        function animateSnowflake(x, y) {
-            const snowfall = () => {
-                ctx.fillStyle = 'white';
-                ctx.beginPath();
-                ctx.arc(x, y, 2, 0, Math.PI * 2);
-                ctx.fill();
-                
-                y += 1;
-                x += Math.sin(y * 0.01) * 0.5;
-                
-                if (y < canvas.height) {
-                    setTimeout(snowfall, 50);
-                }
-            };
-            snowfall();
-        }
-        
-        function addFlowerEffect() {
-            // Ajouter quelques fleurs sur l'arbre
-            for (let i = 0; i < 10; i++) {
-                setTimeout(() => {
-                    const x = canvas.width / 2 + (Math.random() - 0.5) * 200;
-                    const y = canvas.height - 200 - Math.random() * 200;
-                    drawFlower(x, y);
-                }, i * 200);
-            }
-        }
-        
-        function drawFlower(x, y) {
-            ctx.fillStyle = '#FFB6C1';
-            for (let i = 0; i < 5; i++) {
-                ctx.save();
-                ctx.translate(x, y);
-                ctx.rotate((i * Math.PI * 2) / 5);
-                ctx.beginPath();
-                ctx.ellipse(0, -5, 3, 6, 0, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
-            }
-            
-            // Centre de la fleur
-            ctx.fillStyle = '#FFD700';
-            ctx.beginPath();
-            ctx.arc(x, y, 2, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        
-        // Effet de vent aléatoire
-        setInterval(() => {
-            const windStrength = (Math.random() - 0.5) * 2;
-            tree.addWind(windStrength);
-        }, 3000);
-        
-        // Event listeners pour les sliders
-        document.getElementById('ageSlider').addEventListener('input', updateSliders);
-        document.getElementById('branchSlider').addEventListener('input', updateSliders);
-        document.getElementById('leavesSlider').addEventListener('input', updateSliders);
-        
-        // Initialisation
-        updateSliders();
-        tree.draw();
-        
-        // Animation continue pour les effets de vent
-        function animate() {
-            // Redessiner périodiquement pour les effets de vent
-            if (Math.random() < 0.02) { // 2% de chance à chaque frame
-                tree.draw();
-            }
-            requestAnimationFrame(animate);
-        }
-        
-        animate();
+        });
+
     </script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const measurer = document.getElementById('dropdown-measurer');
+            const section = document.querySelector('.section-custom-text');
+            const dropdownContent = document.querySelector('.dropdown-content');
+
+            if (window.innerWidth >= 769) {
+                const measuredWidth = measurer.offsetWidth;
+                const adjustedWidth = measuredWidth + 40;
+
+
+                section.style.minWidth = `${adjustedWidth}px`;
+
+
+                if (dropdownContent) {
+                    dropdownContent.style.width = `${adjustedWidth}px`;
+                }
+            }
+        });
+
+    </script>
+
+
+
+
+    <script>
+
+        const promotionDropdown = document.getElementById("promotion-dropdown");
+        const promotionButton = document.getElementById("selected-promotion");
+        const promotionContent = promotionDropdown.querySelector(".dropdown-content-promotion");
+
+
+        let selectedPromotion = "2025";
+
+
+        for (let year = 2025; year >= 2009; year--) {
+            const a = document.createElement("a");
+            a.href = "#";
+            a.textContent = String(year);
+            a.dataset.year = String(year);
+            promotionContent.appendChild(a);
+
+            a.addEventListener("click", e => {
+                e.preventDefault();
+                const yr = e.currentTarget.dataset.year;
+                selectedPromotion = yr;
+                promotionButton.textContent = yr;
+                promotionContent.classList.remove("show");
+                draw();
+            });
+        }
+
+
+        promotionButton.addEventListener("click", e => {
+            e.stopPropagation();
+            promotionContent.classList.toggle("show");
+        });
+
+
+        window.addEventListener("click", e => {
+            if (!promotionDropdown.contains(e.target)) {
+                promotionContent.classList.remove("show");
+            }
+        });
+
+
+    </script>
+
+    <script>
+        document.getElementById("saveImageBtn").addEventListener("click", function () {
+            const canvas = document.getElementById('fractalTrees');
+            const link = document.createElement('a');
+            link.download = 'My_ALUM-HEAD_tree.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+    </script>
+
+
+    <script>
+        window.addEventListener('load', () => {
+            resizeCanvas();
+        });
+    </script>
+
+
+    <div id="dropdown-measurer"
+        style="position: absolute; visibility: hidden; white-space: nowrap; font-family: 'Comfortaa', sans-serif; font-size: 1rem; padding: 10px 20px; border: 2px solid white;">
+        Interior architecture / Space & Communication
+    </div>
+
 </body>
+
 </html>
+"Ajout du code HTML"
